@@ -82,6 +82,11 @@ which is git-ignored and must never be committed.
   registered as `nylah:coat_2x/4x/8x`.
 - She is an `Ocelot` underneath, not a `Cat`: `Cat` reads its variant from a server-synced
   registry on construction. Cat sounds come from `SoundEvents.CAT_SOUNDS` (CLASSIC set).
+- A name tag needs BOTH `state.nameTag` and `state.nameTagAttachment`: vanilla only fills
+  the anchor when its own `shouldShowName` says yes, and `submitNameDisplay` draws nothing
+  without it. 1.0.0 set only the text, so her name never showed (fixed in 1.0.1).
+- Config migrations: Gson runs field initialisers, so a version field must default to 0
+  (old files lack it) and new configs are stamped in `load()`.
 - Mojang's 26.1 names: `Identifier` (not ResourceLocation), `GuiGraphicsExtractor` +
   `extractRenderState`/`extractBackground`/`extractContents` for GUI, `Entity.snapTo`.
 

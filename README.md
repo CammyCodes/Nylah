@@ -4,7 +4,7 @@
   <img alt="Minecraft 26.1.2" src="https://img.shields.io/badge/Minecraft-26.1.2-8EA2DD">
   <img alt="Fabric" src="https://img.shields.io/badge/loader-Fabric-D9B48A">
   <img alt="Client side" src="https://img.shields.io/badge/side-client%20only-E8A3AE">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-3A2C24">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.1-3A2C24">
 </p>
 
 **Nylah** is a tortie-point Siamese who keeps you company in Minecraft.
@@ -34,14 +34,39 @@ She follows you around, sits beside you when you stop, looks up at you with her 
 
 There are also unbound keys for *something cute* and *nap / wake*. All of them can be changed under **Options → Controls → Nylah**.
 
-In her menu you can set her texture detail (**2x** by default, or **4x** / **8x**), whether her name shows (**always**, **when you look at her**, or **hidden**), her sound volume, and how lively she is.
+In her menu you can set her texture detail (**2x** by default, or **4x** / **8x**), whether her name shows (**always**, **when you look at her**, or **hidden**), her sound volume (full by default), and how lively she is.
 
 ## Install
 
-1. Install [Fabric Loader](https://fabricmc.net/) for Minecraft 26.1.2.
-2. Put `nylah-1.0.0.jar` in your `mods` folder.
+She works on **Mac and Windows** (and Linux), in any Fabric instance of Minecraft 26.1 to 26.1.2, such as **Fabulously Optimized** in CurseForge.
 
-That's all. She has no other dependencies and does not need Fabric API, although she works fine alongside it.
+1. Download `nylah-1.0.1.jar` from the [latest release](https://github.com/CammyCodes/Nylah/releases/latest).
+2. Put it in your instance's `mods` folder. In CurseForge: right-click the instance, choose **Open Folder**, then open `mods`.
+3. Start Minecraft.
+
+She has no other dependencies and does not need Fabric API, although she works fine alongside it.
+
+### Or let Claude install her
+
+If you have [Claude Code](https://claude.com/claude-code) (or the Claude desktop app with Claude Code), paste this in and it will find your CurseForge instance, download her, check the download and install her. It only ever touches Nylah's own file.
+
+```text
+Please install the Minecraft mod "Nylah" into my CurseForge Minecraft instance on this computer. Work carefully and only touch what is described here.
+
+1. Find my CurseForge instances. On a Mac they are normally in ~/Documents/curseforge/minecraft/Instances/ and on Windows in %USERPROFILE%\curseforge\minecraft\Instances\. If they are not there, look for a folder called "Instances" inside a "curseforge/minecraft" folder in my home folder. Every instance folder contains a minecraftinstance.json file.
+
+2. For each instance, read minecraftinstance.json and note its "name", "gameVersion" and "baseModLoader" -> "name". Nylah needs Minecraft 26.1, 26.1.1 or 26.1.2 with the Fabric loader (the loader name starts with "fabric-"), for example Fabulously Optimized for 26.1. Show me a short list of the instances you found and which ones are compatible. If exactly one is compatible, use it. If more than one is, ask me which one. If none are, stop and explain why. Do not install, update or change any modpack, loader or other mod.
+
+3. Check that Minecraft is not running from that instance (look for a running java process whose command line contains that instance's folder). If it is running, ask me to quit Minecraft, and wait until I say it is closed.
+
+4. Download the latest Nylah release. Get the release details from https://api.github.com/repos/CammyCodes/Nylah/releases/latest and download the asset whose name ends in ".jar" and the asset whose name ends in ".jar.sha256" into a temporary folder. Check the jar's SHA-256 (on a Mac: shasum -a 256 <file>; on Windows: Get-FileHash <file> -Algorithm SHA256) against the value in the .sha256 file. If they do not match, stop and tell me.
+
+5. In that instance's "mods" folder, delete any older files named nylah-<version>.jar (only files that start with "nylah-" and end in ".jar"), then copy the new jar in. Do not touch anything else in the mods folder or anywhere else in the instance.
+
+6. Show me the nylah jar now in the mods folder and its SHA-256, so I can see it worked.
+
+7. Finally, tell me: start Minecraft from CurseForge as usual and join any world; Nylah, a little Siamese cat, will come and find me. Press N for her menu (everything she can do, plus settings), press H to call her, and right-click her with an empty hand to stroke her.
+```
 
 ## Building
 

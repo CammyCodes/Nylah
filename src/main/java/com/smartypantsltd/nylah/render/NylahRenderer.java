@@ -81,7 +81,18 @@ public final class NylahRenderer extends MobRenderer<NylahCat, NylahRenderState,
         }];
         // Her name, per the setting; and never the server's below-name scoreboard
         // line (in 26.1 that is drawn under every named entity).
-        state.nameTag = n.showNameTag() ? n.nameTag() : null;
+        // Vanilla only sets the name's anchor point (nameTagAttachment) when ITS
+        // rule says show a name, and draws nothing without one (javap-verified),
+        // so setting nameTag alone shows nothing: set the anchor too.
+        if (n.showNameTag()) {
+            state.nameTag = n.nameTag();
+            if (state.nameTagAttachment == null) {
+                state.nameTagAttachment = cat.getAttachments()
+                        .getNullable(net.minecraft.world.entity.EntityAttachment.NAME_TAG, 0, cat.getYRot(partialTick));
+            }
+        } else {
+            state.nameTag = null;
+        }
         String debug = n.debugLabel();
         state.scoreText = debug == null ? null : Component.literal(debug);
     }

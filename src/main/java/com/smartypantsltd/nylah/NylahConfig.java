@@ -24,13 +24,21 @@ public final class NylahConfig {
     /** Texture density: 2 (default), 4 or 8 texels per model unit. */
     public int textureDetail = 2;
     public NameTag nameTag = NameTag.ALWAYS;
-    /** 0..1, multiplies all her sounds. */
-    public float volume = 0.8f;
+    /** 0..1, multiplies all her sounds. Full by default. */
+    public float volume = 1.0f;
     public Activity activity = Activity.NORMAL;
     /** Her first arrival has happened (she trots in and says hello once, then she is simply there). */
     public boolean firstMeetingDone = false;
     /** How many times she has been stroked. */
     public int strokes = 0;
+    /**
+     * Which defaults this file has been brought up to (see {@link #sanitise}).
+     * 0 here on purpose: Gson runs field initialisers, so an old file WITHOUT
+     * this field must read as 0, not as current. New configs are stamped in load().
+     */
+    public int configVersion = 0;
+
+    static final int CURRENT_VERSION = 2;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -52,11 +60,21 @@ public final class NylahConfig {
             }
         }
         NylahConfig c = new NylahConfig();
+        c.configVersion = CURRENT_VERSION;
         c.save();
         return c;
     }
 
     void sanitise() {
+        // 1.0.0 wrote files without configVersion (read as 0) and an 0.8 volume
+        // default. 1.0.1 defaults to full volume: bring an untouched 0.8 up to it.
+        if (configVersion < 2) {
+            if (Math.abs(volume - 0.8f) < 1e-4) {
+                volume = 1.0f;
+            }
+            configVersion = CURRENT_VERSION;
+            save();
+        }
         if (textureDetail != 4 && textureDetail != 8) {
             textureDetail = 2;
         }
