@@ -33,6 +33,7 @@
 // ModelPart$Cube / $Polygon assign it (read from the 26.1 bytecode).
 const q = new URLSearchParams(location.search);
 const BASE = '../../src/main/resources/assets/nylah/';
+const BUST = '?v=' + Date.now();   // always the latest generated files, never the browser cache
 const W = +(q.get('w') || 380), H = +(q.get('h') || 440);
 const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, alpha: true });
 renderer.setSize(W, H);
@@ -159,19 +160,19 @@ async function sheet() {
 }
 
 function loadTex(d) {
-  const t = new THREE.TextureLoader().load(BASE + `textures/entity/nylah_${d}.png`);
+  const t = new THREE.TextureLoader().load(BASE + `textures/entity/nylah_${d}.png` + BUST);
   t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.flipY = false;
   if (!material) material = new THREE.MeshLambertMaterial({ map: t, alphaTest: 0.1, side: THREE.DoubleSide });
   else { material.map = t; material.needsUpdate = true; }
 }
 
 (async () => {
-  geo = await (await fetch(BASE + 'geo/nylah.geo.json')).json();
+  geo = await (await fetch(BASE + 'geo/nylah.geo.json' + BUST)).json();
   loadTex(q.get('tex') || '2x');
   build();
   try {
-    const list = await (await fetch(BASE + 'anim/index.json')).json();
-    for (const n of list) clips[n] = await (await fetch(BASE + `anim/${n}.json`)).json();
+    const list = await (await fetch(BASE + 'anim/index.json' + BUST)).json();
+    for (const n of list) clips[n] = await (await fetch(BASE + `anim/${n}.json` + BUST)).json();
     const sel = document.getElementById('clip');
     for (const n of list) { const o = document.createElement('option'); o.textContent = n; sel.appendChild(o); }
   } catch (e) { /* no clips yet */ }

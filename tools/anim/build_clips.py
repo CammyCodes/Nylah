@@ -127,9 +127,9 @@ CURL = P(
 
 # Belly up, paws curled, head upside down looking at you (12(17), 12(18), 12(3)).
 BELLY_UP = P(
-    body=b(pos=(0, 4.0, 0), rot=(0, 0, 2.95)),
-    neck=b(rot=(-0.2, 0, 0.45)),
-    head=b(rot=(-0.25, 0, 0.2)),
+    body=b(pos=(-1.6, 3.4, 0), rot=(0, 0, 2.35)),
+    neck=b(rot=(-0.1, 0, -1.15)),
+    head=b(rot=(-0.15, 0, -0.75)),
     arm_l=b(rot=(-0.4, 0, 0.25)), arm_r=b(rot=(-0.55, 0, -0.25)),
     forearm_l=b(rot=(-1.45, 0, 0)), forearm_r=b(rot=(-1.6, 0, 0)),
     hand_l=b(rot=(-1.0, 0, 0)), hand_r=b(rot=(-1.1, 0, 0)),
@@ -287,7 +287,7 @@ clip("slow_blink", "sit", 60, [(0, P(lid_l=b(scale=(1, 0.0, 1)), lid_r=b(scale=(
      vis={"lid_l": [[0, True], [52, False]], "lid_r": [[0, True], [52, False]]}, look=1.0)
 
 # Looking straight up at you, chin tipped right back (12(13), 12(14), video 1).
-_up = add(P(neck=b(rot=(-0.55, 0, 0)), head=b(rot=(-0.55, 0, 0)), chest=b(rot=(-0.1, 0, 0))),
+_up = add(P(neck=b(rot=(-0.32, 0, 0)), head=b(rot=(-0.38, 0, 0)), chest=b(rot=(-0.08, 0, 0))),
           P(ear_l=b(rot=(0, 0, 0.2)), ear_r=b(rot=(0, 0, -0.2))))
 clip("look_up", "sit", 80, [(0, {}), (14, _up), (66, _up), (80, {})], look=0.0)
 
