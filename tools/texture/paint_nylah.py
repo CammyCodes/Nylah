@@ -371,9 +371,9 @@ def coat_head(ph, normal, bone, cube_index):
 
 
 def coat_ear(pl, normal, bone):
-    """Big rounded ears, pink inside with ivory fluff. Her right ear is the darker:
-    seal mottled through ginger behind, a deeper rim and pink in front. Her left is
-    ginger-orange behind."""
+    """Big rounded ears, the same pink inside both with ivory fluff. Her right ear is
+    the darker: seal mottled through ginger behind and a deeper rim in front. Her left
+    is ginger-orange behind."""
     x, y = pl[:, 0], pl[:, 1]
     cx = 0.4 if bone == "ear_l" else -0.4
     f = np.clip(-y / 4.0, 0, 1)
@@ -384,9 +384,9 @@ def coat_ear(pl, normal, bone):
     p3 = np.c_[x, y, np.zeros(len(x))]
     right = bone == "ear_r"
     if normal[2] < 0:
-        col = mix(EAR_PINK, EAR_PINK_DEEP, f * 0.6 + (0.4 if right else 0))
+        col = mix(EAR_PINK, EAR_PINK_DEEP, f * 0.6)                 # the same pink in both ears
         fluff = sstep(0.55, 0.8, vnoise(np.c_[x * 3.5, y * 1.2, np.zeros(len(x))], 1.0, 23)) * sstep(0.5, 0.05, f)
-        col = mix(col, IVORY, fluff * 0.8) * (0.75 if right else 1.0)
+        col = mix(col, IVORY, fluff * 0.8)
         col = np.where(inner[:, None], col, EAR_RIM_R if right else EAR_RIM_L)
     elif right:
         col = mix(EAR_GINGER_DIM, EAR_SEAL, sstep(0.40, 0.60, vnoise(p3 * 2, 1.0, 26)) * 0.9)

@@ -4,7 +4,7 @@
   <img alt="Minecraft 26.1.2 | 26.2" src="https://img.shields.io/badge/Minecraft-26.1.2%20%7C%2026.2-8EA2DD">
   <img alt="Fabric" src="https://img.shields.io/badge/loader-Fabric-D9B48A">
   <img alt="Client side" src="https://img.shields.io/badge/side-client%20only-E8A3AE">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.4-3A2C24">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.5-3A2C24">
 </p>
 
 **Nylah** is a tortie-point Siamese who keeps you company in Minecraft.
@@ -42,8 +42,8 @@ She works on **Mac and Windows** (and Linux), in any Fabric instance of Minecraf
 
 | Your Minecraft | Download |
 |---|---|
-| 26.1, 26.1.1, 26.1.2 | `nylah-1.0.4+26.1.jar` |
-| 26.2 | `nylah-1.0.4+26.2.jar` |
+| 26.1, 26.1.1, 26.1.2 | `nylah-1.0.5+26.1.jar` |
+| 26.2 | `nylah-1.0.5+26.2.jar` |
 
 1. Download the jar for your Minecraft from the [latest release](https://github.com/CammyCodes/Nylah/releases/latest).
 2. Put it in your instance's `mods` folder. In CurseForge: right-click the instance, choose **Open Folder**, then open `mods`.
