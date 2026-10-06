@@ -12,7 +12,8 @@ realistic flecking, huge glossy eyes with two sparkles, a soft brown mask that
 frames the eyes rather than swallowing them, a tiny nose and a little "w"
 mouth. The MARKINGS are hers: tortie-point mask with a few ginger flecks, the
 ginger flash on her right forehead, her dark right front paw and pale left,
-blue eyes, ginger tail band, dark tail tip, ivory bib.
+her dark left hind paw, her darker right ear (seal mottled through ginger; her
+left ear is ginger-orange behind), blue eyes, ginger tail band, dark tail tip, ivory bib.
 
 Outputs (src/main/resources/assets/nylah/textures/entity/):
   nylah_8x.png  the master, 8 texels per model unit (512 x 512)
@@ -75,10 +76,16 @@ MASK_DEEP = lift("#2c231b", 0.20, 0.22)
 GINGER = lift("#915d25", 0.52, 0.55)
 GINGER_LIGHT = lift("#bba389", 0.66, 0.45)
 NOSE = lift("#271a11", 0.17, 0.18)
-EAR_OUT = lift("#745734", 0.30, 0.25)
+# Ears, measured from the videos (backs) and photos (fronts): her right ear is the darker
+# one, seal mottled through ginger; her left ear's back is a warm ginger-orange.
+EAR_GINGER = lift("#d19c71", 0.62, 0.50)            # her left ear's back
+EAR_GINGER_DIM = lift("#bc926b", 0.55, 0.38)        # ginger between her right ear's mottles
+EAR_SEAL = lift("#6e4e32", 0.30, 0.35)              # the seal mottle on her right ear
+EAR_RIM_L = lift("#986e53", 0.46, 0.29)             # ear edge seen from the front, her left
+EAR_RIM_R = lift("#70543a", 0.34, 0.32)             # ... and her darker right
 EAR_PINK = lift("#d98a96", 0.80, 0.45)
 EAR_PINK_DEEP = lift("#d98a96", 0.70, 0.42)
-PAW_DARK = lift("#614c34", 0.42, 0.25)
+PAW_DARK = lift("#614c34", 0.35, 0.33)             # softened as much as her other darks, no more
 PAW_PALE = P["paw_pale"]
 TAIL_TIP = lift("#3b2108", 0.27, 0.32)
 CHIN = lift("#d9d0bf", 0.86, 0.25)
@@ -214,7 +221,8 @@ def coat_body(pm, normal, bone):
 
 
 def coat_leg(pm, pl, normal, bone):
-    """Pale legs; her right front paw is dark and sooty, her left pale, hind feet lightly sooty."""
+    """Pale legs; her right front and left hind paws are dark and sooty, her left front
+    pale, her right hind lightly sooty."""
     y = pm[:, 1]
     side = bone[-1]
     hind = bone.startswith(("thigh", "shin", "foot"))
@@ -225,6 +233,9 @@ def coat_leg(pm, pl, normal, bone):
         col = mix(col, flecks(pm, PAW_DARK, 0.8, 40), soot * 0.92)
     elif not hind:
         col = mix(col, PAW_PALE, sstep(21.0, 23.4, y) * 0.95)
+    elif side == "l":
+        soot = sstep(20.2, 22.6, y)
+        col = mix(col, flecks(pm, PAW_DARK, 0.8, 41), soot * 0.92)
     else:
         soot = sstep(21.0, 23.8, y)
         col = mix(col, mix(PAW_DARK, CREAM, 0.45), soot * 0.75)
@@ -359,7 +370,9 @@ def coat_head(ph, normal, bone, cube_index):
 
 
 def coat_ear(pl, normal, bone):
-    """Big rounded ears: soft brown outside, pink inside with ivory fluff."""
+    """Big rounded ears, pink inside with ivory fluff. Her right ear is the darker:
+    seal mottled through ginger behind, a deeper rim and pink in front. Her left is
+    ginger-orange behind."""
     x, y = pl[:, 0], pl[:, 1]
     cx = 0.4 if bone == "ear_l" else -0.4
     f = np.clip(-y / 4.0, 0, 1)
@@ -368,15 +381,16 @@ def coat_ear(pl, normal, bone):
     alpha = dist <= half
     inner = dist <= half - 0.6
     p3 = np.c_[x, y, np.zeros(len(x))]
+    right = bone == "ear_r"
     if normal[2] < 0:
-        col = mix(EAR_PINK, EAR_PINK_DEEP, f * 0.6)
+        col = mix(EAR_PINK, EAR_PINK_DEEP, f * 0.6 + (0.4 if right else 0))
         fluff = sstep(0.55, 0.8, vnoise(np.c_[x * 3.5, y * 1.2, np.zeros(len(x))], 1.0, 23)) * sstep(0.5, 0.05, f)
-        col = mix(col, IVORY, fluff * 0.8)
-        col = np.where(inner[:, None], col, EAR_OUT)
+        col = mix(col, IVORY, fluff * 0.8) * (0.9 if right else 1.0)
+        col = np.where(inner[:, None], col, EAR_RIM_R if right else EAR_RIM_L)
+    elif right:
+        col = mix(EAR_GINGER_DIM, EAR_SEAL, sstep(0.42, 0.62, vnoise(p3 * 2, 1.0, 26)) * 0.9)
     else:
-        col = flecks(p3, EAR_OUT, 0.6, 24 if bone == "ear_l" else 25)
-        if bone == "ear_r":                            # ginger on her right ear
-            col = mix(col, GINGER, sstep(0.55, 0.75, vnoise(p3 * 2, 1.0, 26)) * 0.7)
+        col = flecks(p3, EAR_GINGER, 0.3, 24)
     return col, alpha
 
 
@@ -537,7 +551,7 @@ def paint(density, ss=3):
 
 
 KEYS = (IRIS, IRIS_LOW, IRIS_RIM, PUPIL, WHITE, NOSE, TONGUE, TONGUE_DEEP, MOUTH, EAR_PINK,
-        LINE, GINGER, PAD, PAD_PINK, BLUSH, MASK)
+        LINE, GINGER, PAD, PAD_PINK, BLUSH, MASK, EAR_GINGER, EAR_SEAL, PAW_DARK)
 
 
 def lock_to(master, img, colours=56):

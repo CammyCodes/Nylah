@@ -106,7 +106,8 @@ which is git-ignored and must never be committed.
 She is deliberately **adorable**: baby-animal proportions (big head and eyes, small round
 body, stubby legs), soft colour fields, huge glossy eyes with two sparkles. Her MARKINGS are
 what make her Nylah: the soft seal mask and blaze, the ginger flash on her right forehead,
-ginger on her right ear, her **dark right front paw and pale left**, the ginger tail band
+her **right ear darker** (seal mottled through ginger; her left ear is ginger behind), her
+**dark right front paw and pale left**, her **dark left hind paw**, the ginger tail band
 and dark tail tip, blue eyes. Model -X is HER RIGHT. Keep both the cuteness and the
 markings when changing anything.
 
