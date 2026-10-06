@@ -1,9 +1,9 @@
 package com.smartypantsltd.nylah.entity;
 
 import com.smartypantsltd.nylah.anim.Animator;
+import com.smartypantsltd.nylah.compat.Mc;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.feline.Ocelot;
 
 /**
@@ -23,7 +23,7 @@ public final class NylahCat extends Ocelot {
     private final Animator animator;
 
     public NylahCat(ClientLevel level, Animator animator) {
-        super(EntityType.OCELOT, level);
+        super(Mc.ocelot(), level);
         this.animator = animator;
         setSilent(true);
         setInvulnerable(true);

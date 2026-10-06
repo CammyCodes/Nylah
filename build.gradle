@@ -3,7 +3,15 @@ plugins {
     id 'xyz.wagyourtail.unimined' version '1.4.2-SNAPSHOT'
 }
 
-version = project.mod_version
+// One Minecraft line per build (-Pmc=26.2); see gradle.properties.
+def mc = project.mc
+def mcProp = { String key ->
+    def v = project.findProperty("mc${mc}.${key}")
+    if (v == null) throw new GradleException("Unknown Minecraft line '${mc}': no mc${mc}.${key} in gradle.properties")
+    v
+}
+
+version = "${project.mod_version}+${mc}".toString()
 group = project.maven_group
 archivesBaseName = project.archives_base_name
 
@@ -27,8 +35,11 @@ repositories {
     mavenCentral()
 }
 
+// The handful of calls that differ between Minecraft lines.
+sourceSets.main.java.srcDir "src/mc${mc}/java"
+
 unimined.minecraft(sourceSets.main) {
-    version project.minecraft_version
+    version mcProp('minecraft_version')
 
     mappings {
         mojmap()
@@ -37,7 +48,7 @@ unimined.minecraft(sourceSets.main) {
     }
 
     fabric {
-        loader project.fabric_loader_version
+        loader mcProp('fabric_loader_version')
     }
 }
 
@@ -50,8 +61,8 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     // The bytecode audit reads the compiled classes with ASM (9.9: reads Java 25 class files).
     testImplementation "org.ow2.asm:asm:9.9.1"
-    // Minecraft's own Gson version (26.1), for the clip loader under test.
-    testImplementation "com.google.code.gson:gson:2.13.2"
+    // Minecraft's own Gson version, for the clip loader under test.
+    testImplementation "com.google.code.gson:gson:${mcProp('gson_version')}"
 }
 
 test {
@@ -65,10 +76,15 @@ test {
 }
 
 processResources {
-    inputs.property "version", project.version
+    def meta = [
+        version: project.version,
+        loader: mcProp('fabric_loader_version'),
+        minecraft: mcProp('minecraft_depends'),
+    ]
+    inputs.properties meta
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand meta
     }
 }
 

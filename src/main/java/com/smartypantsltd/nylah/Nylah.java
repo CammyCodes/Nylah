@@ -4,6 +4,7 @@ import com.smartypantsltd.nylah.anim.Animator;
 import com.smartypantsltd.nylah.anim.Clip;
 import com.smartypantsltd.nylah.anim.ClipLibrary;
 import com.smartypantsltd.nylah.anim.Rig;
+import com.smartypantsltd.nylah.compat.Mc;
 import com.smartypantsltd.nylah.entity.NylahCat;
 import com.smartypantsltd.nylah.model.Geo;
 import com.smartypantsltd.nylah.move.LevelGrid;
@@ -307,7 +308,7 @@ public final class Nylah {
 
     /** Somewhere behind the camera she can walk to you from; your heel if nothing better. */
     private Vec3 hiddenSpot(Minecraft mc, ClientLevel level, LocalPlayer p) {
-        float camYaw = mc.gameRenderer.getMainCamera().yRot();
+        float camYaw = Mc.camera(mc).yRot();
         double fov = mc.options.fov().get();
         int py = (int) Math.floor(p.getY() + 0.01);
         PathFinder finder = mover.finder();
@@ -355,8 +356,8 @@ public final class Nylah {
 
     private void keys(Minecraft mc) {
         while (NylahKeybinds.MENU.consumeClick()) {
-            if (mc.screen == null) {
-                mc.setScreen(new NylahScreen());
+            if (Mc.screen(mc) == null) {
+                Mc.setScreen(mc, new NylahScreen());
             }
         }
         while (NylahKeybinds.COME.consumeClick()) {
@@ -464,7 +465,7 @@ public final class Nylah {
             }
             case "come" -> come();
             case "nap" -> toggleNap();
-            default -> mc.setScreen(new NylahScreen());
+            default -> Mc.setScreen(mc, new NylahScreen());
         }
     }
 
@@ -473,6 +474,6 @@ public final class Nylah {
         Minecraft mc = Minecraft.getInstance();
         MutableComponent name = Component.literal("Nylah ").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(EYE_BLUE)));
         MutableComponent body = Component.literal(text).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xE9E3EF)));
-        mc.execute(() -> mc.gui.getChat().addClientSystemMessage(name.append(body)));
+        mc.execute(() -> Mc.chat(mc).addClientSystemMessage(name.append(body)));
     }
 }

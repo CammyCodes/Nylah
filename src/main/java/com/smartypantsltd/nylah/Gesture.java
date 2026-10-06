@@ -1,5 +1,6 @@
 package com.smartypantsltd.nylah;
 
+import com.smartypantsltd.nylah.compat.Mc;
 import com.smartypantsltd.nylah.entity.NylahCat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.AABB;
@@ -61,7 +62,7 @@ public final class Gesture {
         double herDist = hit.map(eye::distanceTo).orElse(Double.MAX_VALUE);
         double blockDist = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK
                 ? eye.distanceTo(mc.hitResult.getLocation()) : Double.MAX_VALUE;
-        Outcome o = decide(true, mc.screen != null, hit.isPresent(), herDist, blockDist,
+        Outcome o = decide(true, Mc.screen(mc) != null, hit.isPresent(), herDist, blockDist,
                 mc.player.getMainHandItem().isEmpty());
         if (o != Outcome.STROKE) {
             return null;

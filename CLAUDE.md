@@ -1,6 +1,6 @@
 # CLAUDE.md: working on Nylah
 
-Nylah is a client-only Fabric mod (Minecraft 26.1.x, loader-only, Java 25) that adds a
+Nylah is a client-only Fabric mod (Minecraft 26.1.x and 26.2, loader-only, Java 25) that adds a
 companion cat: a tortie-point Siamese with a custom model, a painted coat and a library of
 keyframed and procedural animations. Version **1.0.0**.
 
@@ -12,11 +12,18 @@ references to it, no reading its files or state, no shared code.
 `JAVA_HOME` must be Temurin 25 (`C:\Program Files\Eclipse Adoptium\jdk-25.0.4.7-hotspot`).
 
 ```bash
-./gradlew build          # jar in build/libs/nylah-<version>.jar; runs the tests
-./gradlew test           # just the tests
+./gradlew build            # 26.1 jar: build/libs/nylah-<version>+26.1.jar; runs the tests
+./gradlew build -Pmc=26.2  # 26.2 jar: build/libs/nylah-<version>+26.2.jar
+./gradlew test             # just the tests (add -Pmc=26.2 for the 26.2 line)
 ```
 
-`deliver.ps1` installs the jar into both CurseForge instances (it waits while an instance is
+One source tree serves both Minecraft lines. Each line's versions live in `gradle.properties`
+(`mc<line>.*`), and the few calls that differ between them go through `compat/Mc.java`, which
+exists once per line in `src/mc26.1/java` and `src/mc26.2/java` (same methods in both). When
+26.2 breaks a call, add a method to BOTH copies rather than forking code in `src/main`.
+Build and test both lines before delivering.
+
+`deliver.ps1` installs into both CurseForge instances the jar for each instance's Minecraft line (it waits while an instance is
 running, never leaves two Nylah jars, never downgrades, verifies by hash).
 Bump `mod_version` in `gradle.properties` for every delivered change.
 
@@ -33,6 +40,7 @@ Bump `mod_version` in `gradle.properties` for every delivered change.
 | What she decides to do | `Brain.java` (moods, idle repertoire, leg rubs, follow, wait, sleep...) |
 | Walking | `move/PathFinder.java` (pure A*), `move/LevelGrid.java`, `move/Mover.java` |
 | Being there (spawn, arrive out of view, catch up, nap) | `Nylah.java`, `SpawnSpots.java` |
+| Calls that differ between 26.1 and 26.2 | `compat/Mc.java` in `src/mc26.1/java` and `src/mc26.2/java` |
 | Strokes | `Gesture.java`, `MinecraftMixin.startUseItem` |
 | `/nylah debug` | `DebugReel.java`, `ClientPacketListenerMixin` |
 | Menu, keys, config | `ui/NylahScreen.java`, `NylahKeybinds.java`, `NylahConfig.java` (`config/nylah.json`) |
@@ -57,9 +65,9 @@ which is git-ignored and must never be committed.
 4. **She never appears in view.** Arrivals spawn behind the camera (`SpawnSpots`) and walk in.
 5. **Fake entity ids count down from -1,900,000,000** and are checked against the level
    before use; if a real entity ever takes her id she is quietly re-created.
-6. **Verify every Minecraft API against the 26.1 jar before using it** (`javap -cp
-   ~/.gradle/caches/unimined/net/minecraft/minecraft/26.1/minecraft-26.1-fabric-merged+fixed-official.jar <class>`).
-   Training data does not cover 26.1. Mixin targets are especially unforgiving:
+6. **Verify every Minecraft API against BOTH jars before using it** (`javap -cp
+   ~/.gradle/caches/unimined/net/minecraft/minecraft/26.1/minecraft-26.1-fabric-merged+fixed-official.jar <class>`,
+   and the same under `26.2/`). Training data does not cover 26.x. Mixin targets are especially unforgiving:
    `defaultRequire` is 1, so a wrong descriptor crashes the game at launch.
 
 ## 26.1 facts found while building her (all javap-verified)
@@ -87,6 +95,9 @@ which is git-ignored and must never be committed.
   without it. 1.0.0 set only the text, so her name never showed (fixed in 1.0.1).
 - Config migrations: Gson runs field initialisers, so a version field must default to 0
   (old files lack it) and new configs are stamped in `load()`.
+- 26.2 moved things (javap-verified): screens are on `Gui` (`gui.screen()`, `gui.setScreen`), the
+  chat is `gui.hud.getChat()`, entity-type constants are in `EntityTypes`, and `GameRenderer`
+  getters lost their `get` (`mainCamera()`). Every mixin target is unchanged in 26.2.
 - Mojang's 26.1 names: `Identifier` (not ResourceLocation), `GuiGraphicsExtractor` +
   `extractRenderState`/`extractBackground`/`extractContents` for GUI, `Entity.snapTo`.
 
