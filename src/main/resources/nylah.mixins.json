@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "com.smartypantsltd.nylah.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "verbose": false,
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "ClientPacketListenerMixin",
+    "EntityRenderDispatcherMixin",
+    "EntityRenderersMixin",
+    "MinecraftMixin",
+    "OptionsMixin"
+  ],
+  "mixins": []
+}

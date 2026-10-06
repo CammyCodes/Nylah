@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "nylah",
+  "version": "${version}",
+  "name": "Nylah",
+  "description": "Nylah, a tortie-point Siamese, keeps you company in Minecraft. She follows you, looks up at you, rubs against your legs, bleps, stretches and purrs. Client-side only: the server never knows she exists.",
+  "authors": ["CammyCodes"],
+  "contact": { "sources": "https://github.com/CammyCodes/Nylah" },
+  "icon": "assets/nylah/icon.png",
+  "license": "MIT (code); artwork all rights reserved",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.smartypantsltd.nylah.NylahMod"]
+  },
+  "mixins": ["nylah.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.6",
+    "minecraft": ["26.1", "26.1.1", "26.1.2"]
+  }
+}

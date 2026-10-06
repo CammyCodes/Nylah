@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nylah preview</title>
+<style>
+  :root { --bg: #1d1a22; --ink: #e9e3ef; --dim: #a59fb0; --accent: #8ea2dd; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 13px system-ui, sans-serif; }
+  #wrap { display: flex; gap: 8px; padding: 8px; align-items: flex-start; flex-wrap: wrap; }
+  canvas { background: radial-gradient(#3a3442, #1d1a22); border-radius: 6px; }
+  #ref { max-height: 440px; max-width: 340px; border-radius: 6px; }
+  #bar { padding: 6px 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  button, select { background: #2c2734; color: var(--ink); border: 1px solid #4a4255; border-radius: 4px; padding: 3px 8px; }
+  #status { color: var(--dim); }
+</style>
+</head>
+<body>
+<div id="bar">
+  <select id="view"><option>front</option><option>face</option><option>threeq</option><option>side</option><option>left</option><option>back</option><option>top</option><option>low</option></select>
+  <select id="tex"><option>2x</option><option>4x</option><option>8x</option></select>
+  <select id="clip"><option value="">(rest pose)</option></select>
+  <input id="time" type="range" min="0" max="100" value="0" style="width:200px">
+  <button id="play">play</button>
+  <span id="status"></span>
+</div>
+<div id="wrap"><div id="view3d"></div><img id="ref" alt=""></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="clip.js"></script>
+<script>
+// Minecraft's model maths, replicated: pivots in 1/16 block, Y down, rotations
+// applied Z then Y then X (Quaternionf.rotationZYX), box UV exactly as
+// ModelPart$Cube / $Polygon assign it (read from the 26.1 bytecode).
+const q = new URLSearchParams(location.search);
+const BASE = '../../src/main/resources/assets/nylah/';
+const W = +(q.get('w') || 380), H = +(q.get('h') || 440);
+const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, alpha: true });
+renderer.setSize(W, H);
+document.getElementById('view3d').appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, W / H, 0.05, 50);
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const l0 = new THREE.DirectionalLight(0xffffff, 0.5); l0.position.set(0.2, 1, -0.7); scene.add(l0);
+const l1 = new THREE.DirectionalLight(0xffffff, 0.35); l1.position.set(-0.2, 1, 0.7); scene.add(l1);
+if (q.get('grid') !== '0') { const g = new THREE.GridHelper(4, 64, 0x4a4255, 0x2c2734); scene.add(g); }
+
+let geo, bones = {}, rest = {}, clips = {}, material, root;
+
+function boxMesh(c, tw, th) {
+  const [ox, oy, oz] = c.origin, [w, h, d] = c.size, [ix, iy, iz] = c.inflate, [u, v] = c.uv;
+  const x0 = ox - ix, y0 = oy - iy, z0 = oz - iz, x1 = ox + w + ix, y1 = oy + h + iy, z1 = oz + d + iz;
+  const V = [[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+  const F = [
+    [[5,4,0,1], [u+d, v, u+d+w, v+d]],
+    [[2,3,7,6], [u+d+w, v+d, u+d+2*w, v]],
+    [[0,4,7,3], [u, v+d, u+d, v+d+h]],
+    [[1,0,3,2], [u+d, v+d, u+d+w, v+d+h]],
+    [[5,1,2,6], [u+d+w, v+d, u+2*d+w, v+d+h]],
+    [[4,5,6,7], [u+2*d+w, v+d, u+2*d+2*w, v+d+h]],
+  ];
+  const pos = [], uvs = [];
+  for (const [idx, [u1, v1, u2, v2]] of F) {
+    if ((u2 - u1) === 0 || (v2 - v1) === 0) continue;
+    const corners = [[u2, v1], [u1, v1], [u1, v2], [u2, v2]];
+    for (const k of [0, 1, 2, 0, 2, 3]) {
+      pos.push(...V[idx[k]]);
+      uvs.push(corners[k][0] / tw, corners[k][1] / th);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, material);
+}
+
+// The in-game renderer scales her model by this (NylahRenderer.MODEL_SCALE).
+const S = 0.55;
+
+function build() {
+  const [tw, th] = geo.texture;
+  root = new THREE.Group();
+  root.scale.set(-S / 16, -S / 16, S / 16);
+  root.position.y = 1.5 * S;
+  scene.add(root);
+  for (const b of geo.bones) {
+    const grp = new THREE.Group();
+    grp.name = b.name;
+    for (const c of b.cubes) grp.add(boxMesh(c, tw, th));
+    bones[b.name] = grp;
+    rest[b.name] = b;
+  }
+  for (const b of geo.bones) (b.parent ? bones[b.parent] : root).add(bones[b.name]);
+}
+
+function applyPose(pose) {
+  for (const b of geo.bones) {
+    const g = bones[b.name], p = (pose && pose.bones[b.name]) || null;
+    g.position.set(b.pivot[0] + (p ? p.pos[0] : 0), b.pivot[1] + (p ? p.pos[1] : 0), b.pivot[2] + (p ? p.pos[2] : 0));
+    g.rotation.set(b.rot[0] + (p ? p.rot[0] : 0), b.rot[1] + (p ? p.rot[1] : 0), b.rot[2] + (p ? p.rot[2] : 0), 'ZYX');
+    g.scale.set(p ? p.scale[0] : 1, p ? p.scale[1] : 1, p ? p.scale[2] : 1);
+    g.visible = p ? p.visible : !(b.group === 'lid' || b.group === 'happy' || b.group === 'tongue');
+  }
+  // Whole-body transform, as NylahRenderer.setupRotations applies it.
+  const r = pose ? pose.root : { pos: [0, 0, 0], rot: [0, 0, 0] };
+  root.position.set(-r.pos[0] * S / 16, (24 - r.pos[1]) * S / 16, r.pos[2] * S / 16);
+  root.rotation.set(-r.rot[0], r.rot[1], -r.rot[2], 'ZYX');
+}
+
+const VIEWS = {
+  front: [0, 0.42, -1.7], threeq: [-1.1, 0.55, -1.25], side: [1.7, 0.4, 0], left: [-1.7, 0.4, 0],
+  back: [0, 0.45, 1.7], top: [0.01, 2.0, 0.2], low: [0, 0.12, -1.4], face: [0, 0.5, -0.95],
+};
+function setView(v) {
+  const p = VIEWS[v] || VIEWS.front;
+  camera.position.set(...p);
+  camera.lookAt(0, v === 'face' ? 0.48 : 0.33, v === 'face' ? -0.2 : 0);
+}
+
+let playing = false, t0 = 0;
+function frame() {
+  const name = document.getElementById('clip').value;
+  const slider = document.getElementById('time');
+  let pose = null;
+  if (name && clips[name]) {
+    const c = clips[name];
+    let t = +slider.value / 100 * c.length;
+    if (playing) { t = ((performance.now() - t0) / 50) % c.length; slider.value = t / c.length * 100; }
+    pose = NylahClip.sample(c, t, geo);
+    document.getElementById('status').textContent = `${name}  t=${t.toFixed(1)}/${c.length}`;
+  }
+  applyPose(pose);
+  renderer.render(scene, camera);
+  document.title = 'ready';
+  requestAnimationFrame(frame);
+}
+
+// Contact sheet: every clip (or ?only=a,b) at a fraction of its length (?at=0.5), one labelled tile each.
+async function sheet() {
+  await new Promise(r => setTimeout(r, 400));            // let the texture arrive
+  const names = (q.get('only') ? q.get('only').split(',') : Object.keys(clips));
+  const at = +(q.get('at') || 0.5), cols = +(q.get('cols') || 6), tw = W, th = H;
+  const out = document.createElement('canvas');
+  out.width = cols * tw; out.height = Math.ceil(names.length / cols) * th;
+  const g = out.getContext('2d');
+  g.fillStyle = '#1d1a22'; g.fillRect(0, 0, out.width, out.height);
+  names.forEach((n, i) => {
+    const c = clips[n];
+    applyPose(NylahClip.sample(c, c.length * at, geo));
+    renderer.render(scene, camera);
+    g.drawImage(renderer.domElement, (i % cols) * tw, Math.floor(i / cols) * th, tw, th);
+    g.fillStyle = '#e9e3ef'; g.font = '22px sans-serif';
+    g.fillText(n, (i % cols) * tw + 8, Math.floor(i / cols) * th + 26);
+  });
+  document.getElementById('wrap').innerHTML = '';
+  out.style.width = '100%';
+  document.getElementById('wrap').appendChild(out);
+  document.title = 'ready';
+}
+
+function loadTex(d) {
+  const t = new THREE.TextureLoader().load(BASE + `textures/entity/nylah_${d}.png`);
+  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.flipY = false;
+  if (!material) material = new THREE.MeshLambertMaterial({ map: t, alphaTest: 0.1, side: THREE.DoubleSide });
+  else { material.map = t; material.needsUpdate = true; }
+}
+
+(async () => {
+  geo = await (await fetch(BASE + 'geo/nylah.geo.json')).json();
+  loadTex(q.get('tex') || '2x');
+  build();
+  try {
+    const list = await (await fetch(BASE + 'anim/index.json')).json();
+    for (const n of list) clips[n] = await (await fetch(BASE + `anim/${n}.json`)).json();
+    const sel = document.getElementById('clip');
+    for (const n of list) { const o = document.createElement('option'); o.textContent = n; sel.appendChild(o); }
+  } catch (e) { /* no clips yet */ }
+  const v = q.get('view') || 'front';
+  document.getElementById('view').value = v; setView(v);
+  document.getElementById('tex').value = q.get('tex') || '2x';
+  if (q.get('clip')) document.getElementById('clip').value = q.get('clip');
+  if (q.get('t')) document.getElementById('time').value = q.get('t');
+  if (q.get('ref')) document.getElementById('ref').src = `../../reference/photos/${q.get('ref')}.jpg`;
+  document.getElementById('view').onchange = e => setView(e.target.value);
+  document.getElementById('tex').onchange = e => loadTex(e.target.value);
+  document.getElementById('play').onclick = () => { playing = !playing; t0 = performance.now(); };
+  if (q.get('play')) { playing = true; t0 = performance.now(); }
+  if (q.get('sheet')) { sheet(); return; }
+  frame();
+})();
+</script>
+</body>
+</html>

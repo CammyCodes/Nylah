@@ -1,0 +1,1 @@
+{"name":"stand","kind":"posture","posture":"stand","length":40,"loop":true,"blendIn":10,"blendOut":10,"lookAt":1.0,"tracks":{"chest":{"scale":[[0,[1,1,1]],[20,[1.03,1.03,1]],[40,[1,1,1]]]}},"vis":{},"events":[]}

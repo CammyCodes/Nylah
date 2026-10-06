@@ -1,0 +1,24 @@
+# Reference photos and videos stay on this machine, never in the repo.
+reference/
+*.jpg
+*.jpeg
+*.mp4
+*.mov
+*.heic
+
+# Build output
+.gradle/
+build/
+out/
+bin/
+run/
+*.class
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Tool scratch
+tools/**/__pycache__/
+tools/**/out/
