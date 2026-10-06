@@ -77,12 +77,13 @@ GINGER = lift("#915d25", 0.52, 0.55)
 GINGER_LIGHT = lift("#bba389", 0.66, 0.45)
 NOSE = lift("#271a11", 0.17, 0.18)
 # Ears, measured from the videos (backs) and photos (fronts): her right ear is the darker
-# one, seal mottled through ginger; her left ear's back is a warm ginger-orange.
+# one, seal mottled through ginger; her left ear's back is a warm ginger-orange. Her right
+# is drawn a little darker than measured (about 70% of her left, not 80%) so it reads.
 EAR_GINGER = lift("#d19c71", 0.62, 0.50)            # her left ear's back
-EAR_GINGER_DIM = lift("#bc926b", 0.55, 0.38)        # ginger between her right ear's mottles
-EAR_SEAL = lift("#6e4e32", 0.30, 0.35)              # the seal mottle on her right ear
+EAR_GINGER_DIM = lift("#bc926b", 0.50, 0.38)        # ginger between her right ear's mottles
+EAR_SEAL = lift("#6e4e32", 0.26, 0.35)              # the seal mottle on her right ear
 EAR_RIM_L = lift("#986e53", 0.46, 0.29)             # ear edge seen from the front, her left
-EAR_RIM_R = lift("#70543a", 0.34, 0.32)             # ... and her darker right
+EAR_RIM_R = lift("#70543a", 0.27, 0.32)             # ... and her darker right
 EAR_PINK = lift("#d98a96", 0.80, 0.45)
 EAR_PINK_DEEP = lift("#d98a96", 0.70, 0.42)
 PAW_DARK = lift("#614c34", 0.35, 0.33)             # softened as much as her other darks, no more
@@ -385,10 +386,10 @@ def coat_ear(pl, normal, bone):
     if normal[2] < 0:
         col = mix(EAR_PINK, EAR_PINK_DEEP, f * 0.6 + (0.4 if right else 0))
         fluff = sstep(0.55, 0.8, vnoise(np.c_[x * 3.5, y * 1.2, np.zeros(len(x))], 1.0, 23)) * sstep(0.5, 0.05, f)
-        col = mix(col, IVORY, fluff * 0.8) * (0.9 if right else 1.0)
+        col = mix(col, IVORY, fluff * 0.8) * (0.75 if right else 1.0)
         col = np.where(inner[:, None], col, EAR_RIM_R if right else EAR_RIM_L)
     elif right:
-        col = mix(EAR_GINGER_DIM, EAR_SEAL, sstep(0.42, 0.62, vnoise(p3 * 2, 1.0, 26)) * 0.9)
+        col = mix(EAR_GINGER_DIM, EAR_SEAL, sstep(0.40, 0.60, vnoise(p3 * 2, 1.0, 26)) * 0.9)
     else:
         col = flecks(p3, EAR_GINGER, 0.3, 24)
     return col, alpha
